@@ -1,0 +1,77 @@
+services:
+  issuance-service:
+    build:
+      context: ./backend/issuance-service
+      dockerfile: Dockerfile
+    container_name: kubecred-issuance
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - WORKER_ID=issuance-worker-1
+    volumes:
+      - issuance_data:/app/data
+    networks:
+      - kubecred-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  verification-service:
+    build:
+      context: ./backend/verification-service
+      dockerfile: Dockerfile
+    container_name: kubecred-verification
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - WORKER_ID=verification-worker-1
+      - ISSUANCE_SERVICE_URL=http://issuance-service:3001
+    depends_on:
+      issuance-service:
+        condition: service_healthy
+    networks:
+      - kubecred-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kubecred-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_ISSUANCE_API_URL=http://localhost:3001
+      - REACT_APP_VERIFICATION_API_URL=http://localhost:3002
+    depends_on:
+      issuance-service:
+        condition: service_healthy
+      verification-service:
+        condition: service_healthy
+    networks:
+      - kubecred-network
+
+networks:
+  kubecred-network:
+    driver: bridge
+    name: kubecred-network
+
+volumes:
+  issuance_data:
+    driver: local
+    name: kubecred-issuance-data
