@@ -71,12 +71,12 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: REACT_APP_ISSUANCE_API
+      - key: REACT_APP_ISSUANCE_API_URL
         fromService:
           type: web
           name: kube-credential-issuance
           property: host
-      - key: REACT_APP_VERIFICATION_API
+      - key: REACT_APP_VERIFICATION_API_URL
         fromService:
           type: web
           name: kube-credential-verification
