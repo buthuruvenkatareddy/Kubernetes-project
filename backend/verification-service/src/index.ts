@@ -24,6 +24,26 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   } as ApiResponse);
 });
 
+// Root endpoint
+app.get('/', async (req: Request, res: Response) => {
+  const issuanceServiceHealthy = await verificationService.healthCheck();
+  
+  res.json({
+    success: true,
+    message: 'Kube Credential Verification Service',
+    data: {
+      service: 'verification-service',
+      version: '1.0.0',
+      workerId: verificationService.getWorkerId(),
+      issuanceServiceConnected: issuanceServiceHealthy,
+      endpoints: {
+        health: '/health',
+        verify: '/api/credentials/verify'
+      }
+    }
+  } as ApiResponse);
+});
+
 // Health check endpoint
 app.get('/health', async (req: Request, res: Response) => {
   const issuanceServiceHealthy = await verificationService.healthCheck();

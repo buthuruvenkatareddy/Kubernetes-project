@@ -24,6 +24,24 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   } as ApiResponse);
 });
 
+// Root endpoint
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Kube Credential Issuance Service',
+    data: {
+      service: 'issuance-service',
+      version: '1.0.0',
+      workerId: db.getWorkerId(),
+      endpoints: {
+        health: '/health',
+        issue: '/api/credentials/issue',
+        getCredential: '/api/credentials/:id'
+      }
+    }
+  } as ApiResponse);
+});
+
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
   res.json({
