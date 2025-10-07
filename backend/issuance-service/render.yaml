@@ -1,0 +1,23 @@
+# Render Service Configuration for Issuance Service
+
+name: kube-credential-issuance
+type: web
+env: node
+region: ohio
+plan: free
+buildCommand: npm install && npm run build
+startCommand: npm start
+repo: https://github.com/buthuruvenkatareddy/Kubernetes-project.git
+autoDeploy: true
+rootDir: backend/issuance-service
+
+envVars:
+  NODE_ENV: production
+  PORT: 10000
+  WORKER_ID: issuance-worker-1
+  # DATABASE_URL will be set from PostgreSQL service
+
+healthCheckPath: /health
+
+domains:
+  - kube-credential-issuance.onrender.com

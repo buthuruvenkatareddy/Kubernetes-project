@@ -1,0 +1,23 @@
+# Render Service Configuration for Verification Service
+
+name: kube-credential-verification
+type: web
+env: node
+region: ohio
+plan: free
+buildCommand: npm install && npm run build
+startCommand: npm start
+repo: https://github.com/buthuruvenkatareddy/Kubernetes-project.git
+autoDeploy: true
+rootDir: backend/verification-service
+
+envVars:
+  NODE_ENV: production
+  PORT: 10000
+  # DATABASE_URL will be set from PostgreSQL service
+  # ISSUANCE_SERVICE_URL will be set from issuance service
+
+healthCheckPath: /health
+
+domains:
+  - kube-credential-verification.onrender.com

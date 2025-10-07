@@ -1,0 +1,83 @@
+# Render Blueprint - Infrastructure as Code for Render.com
+# This file defines all services and database for your project
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: kube-credential-db
+    env: docker
+    plan: free
+    database: credentials
+    user: credentials_user
+    region: ohio
+
+  # Issuance Service (Backend API)
+  - type: web
+    name: kube-credential-issuance
+    env: node
+    plan: free
+    region: ohio
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    repo: https://github.com/buthuruvenkatareddy/Kubernetes-project.git
+    rootDir: backend/issuance-service
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: WORKER_ID
+        value: issuance-worker-1
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kube-credential-db
+          property: connectionString
+
+  # Verification Service (Backend API)  
+  - type: web
+    name: kube-credential-verification
+    env: node
+    plan: free
+    region: ohio
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    repo: https://github.com/buthuruvenkatareddy/Kubernetes-project.git
+    rootDir: backend/verification-service
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kube-credential-db
+          property: connectionString
+      - key: ISSUANCE_SERVICE_URL
+        fromService:
+          type: web
+          name: kube-credential-issuance
+          property: host
+
+  # Frontend (React Application)
+  - type: web
+    name: kube-credential-frontend
+    env: node
+    plan: free
+    region: ohio
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s build -l $PORT
+    repo: https://github.com/buthuruvenkatareddy/Kubernetes-project.git
+    rootDir: frontend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REACT_APP_ISSUANCE_API
+        fromService:
+          type: web
+          name: kube-credential-issuance
+          property: host
+      - key: REACT_APP_VERIFICATION_API
+        fromService:
+          type: web
+          name: kube-credential-verification
+          property: host

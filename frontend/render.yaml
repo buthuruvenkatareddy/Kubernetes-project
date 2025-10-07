@@ -1,0 +1,31 @@
+# Render Service Configuration for Frontend
+
+name: kube-credential-frontend
+type: web
+env: node
+region: ohio
+plan: free
+buildCommand: npm install && npm run build
+startCommand: npx serve -s build -l $PORT
+repo: https://github.com/buthuruvenkatareddy/Kubernetes-project.git
+autoDeploy: true
+rootDir: frontend
+
+envVars:
+  NODE_ENV: production
+  # REACT_APP_ISSUANCE_API will be set from issuance service
+  # REACT_APP_VERIFICATION_API will be set from verification service
+
+domains:
+  - kube-credential-frontend.onrender.com
+
+# Static site optimizations
+headers:
+  - source: "**/*.{js,css}"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=31536000, immutable"
+  - source: "**/*.{html,json,txt}"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, must-revalidate"
